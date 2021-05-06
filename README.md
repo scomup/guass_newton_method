@@ -9,3 +9,4 @@ Try 3d point-matching demo.
 > python3 3d.py  
 
  ![demo](https://github.com/scomup/guass_newton_method/blob/master/3d_demo.gif)
+<img src="https://github.com/scomup/guass_newton_method/blob/master/3d_demo.gif" width="300">  
