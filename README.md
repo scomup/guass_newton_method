@@ -7,4 +7,4 @@ Try 2d point-matching demo.
 
 Try 3d point-matching demo.    
 > python3 3d.py  
-<img src="https://github.com/scomup/mls/blob/master/3d_demo.gif" width="240">  
+<img src="https://github.com/scomup/guass_newton_method/blob/master/3d_demo.gif" width="240">  
