@@ -18,7 +18,8 @@ def transform2d(x,p):
 def transform3d(x,p):
     t = x[0:3]
     R = exp(x[3:6])
-    tp = np.dot(R,p).reshape(3, p.size/3) + np.array([t,]*(p.size/3)).transpose()
+    element = int(p.size/3)
+    tp = np.dot(R,p).reshape(3, -1) + np.array([t,]*(element)).transpose()
     return tp
 
 # 3d Rotation Matrix to so3
@@ -64,7 +65,6 @@ def exp(v):
 if __name__ == '__main__':
     quat = np.array([0.        , 0.67385289, 0.44923526, 0.58660887])
     rot = Rotation.from_quat(quat)
-
     v =  log(rot.as_dcm())
     q2 =  exp(v)
-    print q2
+    print(q2)

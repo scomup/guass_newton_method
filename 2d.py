@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 from math_tools import *
 
 #https://www.slideshare.net/sleepy_yoshi/cvim11-3?ref=https://daily-tech.hatenablog.com/entry/2019/06/17/041356
-x = np.array([-0.3,0.2,np.pi/2])
+x = np.array([-0.3,0.2,np.pi])
 
 
-def createdTdx():
+def calcdTdx():
     A1 = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0. ])
     A2 = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0. ])
     A3 = np.array([0, -1, 0, 1, 0, 0, 0, 0, 0.])
@@ -16,7 +16,15 @@ def createdTdx():
     dTdx[:,2] = A3
     return dTdx
 
-def createdfdT(a):
+def calcdfdT(a):
+    """
+    This function calculates the partial differential matrix of f near the T(0) 
+    f = T(a) - b
+    T = | t1, t2, t3 |  a = [u, v, 1]
+        | t4, t5, t6 |
+        | t7, t8, t9 | 
+    try find: df/dT|T(0)
+    """
     dfdT = np.empty((0,9), float)
     for i in range(a.shape[1]):
         u = a[0,i]
@@ -26,7 +34,7 @@ def createdfdT(a):
         dfdT = np.append(dfdT, tmp, axis=0)
     return dfdT
 
-def createRes(a,b):
+def calcRes(a,b):
     res = []
     m = 0.
     for i in range(a.shape[1]):
@@ -37,7 +45,7 @@ def createRes(a,b):
         m += x*x + y*y
     return np.array(res), m
 
-# f = T(x)(a) - b: Residual function for the problem
+# f = T(x)(a) - b: objective function for the problem
 # T: transform function
 # x: Optimization Parameters for f
 if __name__ == '__main__':
@@ -49,21 +57,25 @@ if __name__ == '__main__':
     b = transform2d(x, a)
     b[0:2,:] += np.random.normal(0, 0.03, (2, elements))
 
-    dTdx = createdTdx()
+    dTdx = calcdTdx()
     cost =1000000000.
     last_cost = cost+1
     x_cur = np.array([0,0,0.])
-    while(last_cost - cost > 0.00001):
-        cur_a = transform2d(x_cur, a)
+    cur_a = a
+    max_loop = 20
+    loop = 0
+    while((last_cost - cost > 0.00001) or (loop > max_loop)):
         last_cost = cost
-        res, cost = createRes(cur_a,b)
-        dfdT = createdfdT(cur_a)
+        res, cost = calcRes(cur_a, b)
+        dfdT = calcdfdT(cur_a)
         J = np.dot(dfdT, dTdx)
         hessian = np.dot(J.transpose() , J)
         hessian_inv = np.linalg.inv(hessian)
         temp = -np.dot(J.transpose(), res)
         dx = np.dot(hessian_inv, temp)
+        cur_a = transform2d(dx, cur_a)
         x_cur = x_cur + dx
+        loop += 1
 
         plt.cla()
         plt.xlim(-2,2)

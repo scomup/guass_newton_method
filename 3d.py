@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from math_tools import *
 
-x = np.array([0.1,-0.1,0.1, 0.1, 2.2,0.3])
+x = np.array([0.1,-0.1,0.1, 2.1, 2.2,-1.3])
 
 def v2m(v):
     return np.array([[np.cos(v[2]),-np.sin(v[2]), v[0]],
@@ -14,7 +14,7 @@ def v2m(v):
 def m2v(m):
     return np.array([m[0,2],m[1,2],np.arctan2(m[1,0],m[0,0])])
 
-def createdTdx():
+def calcdTdx():
     A1 = np.array([0, 0, 0, 1,  0, 0, 0, 0,  0, 0, 0, 0. ])
     A2 = np.array([0, 0, 0, 0,  0, 0, 0, 1,  0, 0, 0, 0. ])
     A3 = np.array([0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 1. ])
@@ -30,7 +30,7 @@ def createdTdx():
     dTdx[:,5] = A6
     return dTdx
 
-def createdfdT(a):
+def calcdfdT(a):
     dfdT = np.empty((0,12), float)
 
 
@@ -38,13 +38,13 @@ def createdfdT(a):
         x = a[0,i]
         y = a[1,i]
         z = a[2,i]
-        tmp = np.array([[x, y, z,1,  0, 0, 0,0,  0, 0, 0,0,],
-                        [0, 0, 0,0,  x, y, z,1,  0, 0, 0,0,],
-                        [0, 0, 0,0,  0, 0, 0,0,  x, y, z,1,]])
+        tmp = np.array([[x, y, z, 1,  0, 0, 0, 0,  0, 0, 0, 0,],
+                        [0, 0, 0, 0,  x, y, z, 1,  0, 0, 0, 0,],
+                        [0, 0, 0, 0,  0, 0, 0, 0,  x, y, z, 1,]])
         dfdT = np.append(dfdT, tmp, axis=0)
     return dfdT
 
-def createRes(a,b):
+def calcRes(a,b):
     res = []
     m = 0.
     for i in range(a.shape[1]):
@@ -57,7 +57,7 @@ def createRes(a,b):
         m += x*x + y*y + z*z
     return np.array(res), m
 
-# f = T(x)(a) - b: Residual function for the problem
+# f = T(x)(a) - b: objective function for the problem
 # T: transform function
 # x: Optimization Parameters for f
 
@@ -80,21 +80,27 @@ if __name__ == '__main__':
     #a = a.transpose()
     #b = transform(x, a)
 
-    dTdx = createdTdx()
+    dTdx = calcdTdx()
     cost =1000000000.
     last_cost = cost+1
     x_cur = np.array([0,0,0,0,0,0])
-    while(last_cost - cost > 0.00001):
-        cur_a = transform3d(x_cur, a)
+    cur_a = a
+    max_loop = 20
+    loop = 0
+    
+
+    while((last_cost - cost > 0.00001) or (loop > max_loop)):
         last_cost = cost
-        res, cost = createRes(cur_a,b)
-        dfdT = createdfdT(cur_a)
+        res, cost = calcRes(cur_a, b)
+        dfdT = calcdfdT(cur_a)
         J = np.dot(dfdT, dTdx)
         hessian = np.dot(J.transpose() , J)
         hessian_inv = np.linalg.inv(hessian)
         temp = -np.dot(J.transpose(), res)
         dx = np.dot(hessian_inv, temp)
+        cur_a = transform3d(dx, cur_a)
         x_cur = x_cur + dx
+        loop += 1
 
         plt.cla()
         ax.set_xlim(-2,2)
