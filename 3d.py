@@ -4,16 +4,6 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from math_tools import *
 
-x = np.array([0.1,-0.1,0.1, 2.1, 2.2,-1.3])
-
-def v2m(v):
-    return np.array([[np.cos(v[2]),-np.sin(v[2]), v[0]],
-            [np.sin(v[2]),np.cos(v[2]), v[1]], 
-            [0,0,1]])
-
-def m2v(m):
-    return np.array([m[0,2],m[1,2],np.arctan2(m[1,0],m[0,0])])
-
 def calcdTdx():
     A1 = np.array([0, 0, 0, 1,  0, 0, 0, 0,  0, 0, 0, 0. ])
     A2 = np.array([0, 0, 0, 0,  0, 0, 0, 1,  0, 0, 0, 0. ])
@@ -32,8 +22,6 @@ def calcdTdx():
 
 def calcdfdT(a):
     dfdT = np.empty((0,12), float)
-
-
     for i in range(a.shape[1]):
         x = a[0,i]
         y = a[1,i]
@@ -69,6 +57,8 @@ if __name__ == '__main__':
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
+    
+    x = np.array([0.1,-0.1,0.1, 2.1, 2.2,-1.3])
 
     elements = 100
     a = (np.random.rand(elements,3)-0.5)*2
@@ -79,7 +69,7 @@ if __name__ == '__main__':
     #a = np.array([[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]])
     #a = a.transpose()
     #b = transform(x, a)
-
+    
     dTdx = calcdTdx()
     cost =1000000000.
     last_cost = cost+1

@@ -3,14 +3,12 @@ import matplotlib.pyplot as plt
 from math_tools import *
 
 #https://www.slideshare.net/sleepy_yoshi/cvim11-3?ref=https://daily-tech.hatenablog.com/entry/2019/06/17/041356
-x = np.array([-0.3,0.2,np.pi])
-
 
 def calcdTdx():
-    A1 = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0. ])
-    A2 = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0. ])
-    A3 = np.array([0, -1, 0, 1, 0, 0, 0, 0, 0.])
-    dTdx = np.zeros([9,3])
+    A1 = np.array([0, 0, 1, 0, 0, 0])
+    A2 = np.array([0, 0, 0, 0, 0, 1])
+    A3 = np.array([0, -1, 0, 1, 0, 0])
+    dTdx = np.zeros([6,3])
     dTdx[:,0] = A1
     dTdx[:,1] = A2
     dTdx[:,2] = A3
@@ -25,12 +23,12 @@ def calcdfdT(a):
         | t7, t8, t9 | 
     try find: df/dT|T(0)
     """
-    dfdT = np.empty((0,9), float)
+    dfdT = np.empty((0,6), float)
     for i in range(a.shape[1]):
-        u = a[0,i]
-        v = a[1,i]
-        tmp = np.array([[u, v, 1, 0, 0, 0, -u * u, -u * v, -u],
-            [0, 0, 0, u, v, 1, -v * u, -v * v, -v]])
+        x = a[0,i]
+        y = a[1,i]
+        tmp = np.array([[x, y, 1,  0, 0, 0],
+                        [0, 0, 0,  x, y, 1]])
         dfdT = np.append(dfdT, tmp, axis=0)
     return dfdT
 
@@ -38,10 +36,10 @@ def calcRes(a,b):
     res = []
     m = 0.
     for i in range(a.shape[1]):
-        x = a[0,i]/a[2,i] - b[0,i]
-        y = a[1,i]/a[2,i] - b[1,i]
-        res.append( x)
-        res.append( y)
+        x = a[0,i] - b[0,i]
+        y = a[1,i] - b[1,i]
+        res.append(x)
+        res.append(y)
         m += x*x + y*y
     return np.array(res), m
 
@@ -49,13 +47,13 @@ def calcRes(a,b):
 # T: transform function
 # x: Optimization Parameters for f
 if __name__ == '__main__':
+    x = np.array([-0.3,0.2,np.pi])
+
     elements = 100
     a = (np.random.rand(elements,2)-0.5)*2
-    tmp = np.zeros((elements, 1))
-    tmp.fill(1)
-    a = np.hstack([a, tmp]).transpose()
+    a = a.transpose()
     b = transform2d(x, a)
-    b[0:2,:] += np.random.normal(0, 0.03, (2, elements))
+    b += np.random.normal(0, 0.03, (2, elements))
 
     dTdx = calcdTdx()
     cost =1000000000.

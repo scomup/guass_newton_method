@@ -12,8 +12,11 @@ def m2v(m):
     return np.array([m[0,2],m[1,2],np.arctan2(m[1,0],m[0,0])])
 
 def transform2d(x,p):
-    T = v2m(x)
-    return np.dot(T,p)
+    t = x[0:2]
+    R = np.array([[np.cos(x[2]),-np.sin(x[2])], [np.sin(x[2]),np.cos(x[2])]])
+    element = int(p.size/2)
+    tp = np.dot(R,p).reshape(2, -1) + np.array([t,]*(element)).transpose()
+    return tp
 
 def transform3d(x,p):
     t = x[0:3]
