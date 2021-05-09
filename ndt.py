@@ -49,6 +49,7 @@ def calcRes(s,a,b):
         h = s.T.dot(d)
         res = np.append(res, h, axis=0)
         m += h.T.dot(h)
+
     return res, m
 
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     mean = np.array([0, 0, 0])
 
     cov = np.array([[1, 0, 0], 
-                    [0, 1, 0],
+                    [0, 0.5, 0],
                     [0, 0, 0.01]])
 
 
@@ -91,10 +92,10 @@ if __name__ == '__main__':
     last_cost = cost+1
     x_cur = np.array([0,0,0,0,0,0])
     cur_a = a
-    max_loop = 20
+    max_loop = 200
     loop = 0
     
-    while((last_cost - cost > 0.01) or (loop > max_loop)):
+    while((last_cost - cost > 0.0001) and (loop < max_loop)):
         last_cost = cost
         res, cost = calcRes(s, cur_a, b)
         dfdT = calcdfdT(s, cur_a)

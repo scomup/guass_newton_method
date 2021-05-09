@@ -79,7 +79,7 @@ if __name__ == '__main__':
     loop = 0
     
 
-    while((last_cost - cost > 0.00001) or (loop > max_loop)):
+    while((last_cost - cost > 0.0001) and (loop < max_loop)):
         last_cost = cost
         res, cost = calcRes(cur_a, b)
         dfdT = calcdfdT(cur_a)
