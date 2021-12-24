@@ -102,8 +102,8 @@ if __name__ == '__main__':
         J = np.dot(dfdT, dTdx)
         hessian = np.dot(J.transpose() , J)
         hessian_inv = np.linalg.inv(hessian)
-        temp = -np.dot(J.transpose(), res)
-        dx = np.dot(hessian_inv, temp)
+        g = np.dot(J.transpose(), res)
+        dx = np.dot(-hessian_inv, g)
         cur_a = transform3d(dx, cur_a)
         x_cur = x_cur + dx
         loop += 1
