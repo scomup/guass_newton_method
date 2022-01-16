@@ -43,31 +43,34 @@ def fun(init_p, a, b):
 
 def calcdxdp(init_p, a):
     T = x2m(init_p)
-    x = a[0]
-    y = a[1]
-    z = a[2] 
-    dxdp = np.array([[T[0,0], T[0,1], T[0,2], -T[0,1]*z + T[0,2]*y, T[0,0]*z - T[0,2]*x, -T[0,0]*y + T[0,1]*x],
-                    [T[1,0], T[1,1], T[1,2], -T[1,1]*z + T[1,2]*y, T[1,0]*z - T[1,2]*x, -T[1,0]*y + T[1,1]*x],
-                    [T[2,0], T[2,1], T[2,2], -T[2,1]*z + T[2,2]*y, T[2,0]*z - T[2,2]*x, -T[2,0]*y + T[2,1]*x],])
-
-
+    dxdp = np.array([[T[0,0], T[0,1], T[0,2], -T[0,1]*a[2] + T[0,2]*a[1], T[0,0]*a[2] - T[0,2]*a[0], -T[0,0]*a[1] + T[0,1]*a[0]],
+                     [T[1,0], T[1,1], T[1,2], -T[1,1]*a[2] + T[1,2]*a[1], T[1,0]*a[2] - T[1,2]*a[0], -T[1,0]*a[1] + T[1,1]*a[0]],
+                     [T[2,0], T[2,1], T[2,2], -T[2,1]*a[2] + T[2,2]*a[1], T[2,0]*a[2] - T[2,2]*a[0], -T[2,0]*a[1] + T[2,1]*a[0]],])
 
     return dxdp
 
-def calcdx2dp2(a):
-    x1 = a[0]
-    x2 = a[1]
-    x3 = a[2]
-    dx2dp2 = np.zeros([18,6])
-    dx2dp2[9 : 12, 3] = np.array([0,-x2,-x3])
-    dx2dp2[12: 15, 3] = np.array([0,x1,0])
-    dx2dp2[15: 18, 3] = np.array([0,0,x1])
-    dx2dp2[9 : 12, 4] = np.array([0,x1,0])
-    dx2dp2[12: 15, 4] = np.array([-x1,0,-x3])
-    dx2dp2[15: 18, 4] = np.array([0,0,x2])
-    dx2dp2[9 : 12, 5] = np.array([0,0,x1])
-    dx2dp2[12: 15, 5] = np.array([0,0,x2])
-    dx2dp2[15: 18, 5] = np.array([-x1,-x2,0])
+def calcdx2dp2(init_p, a):
+    T = x2m(init_p)
+    dx2dp2 = np.array(
+        [[0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, -T[0,1]*a[1] - T[0,2]*a[2], T[0,1]*a[0], T[0,2]*a[0]], 
+         [0, 0, 0, -T[1,1]*a[1] - T[1,2]*a[2], T[1,1]*a[0], T[1,2]*a[0]], 
+         [0, 0, 0, -T[2,1]*a[1] - T[2,2]*a[2], T[2,1]*a[0], T[2,2]*a[0]], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, -T[1,1]*a[1] - T[1,2]*a[2], T[1,1]*a[0], T[1,2]*a[0]], 
+         [0, 0, 0, -T[2,1]*a[1] - T[2,2]*a[2], T[2,1]*a[0], T[2,2]*a[0]], 
+         [0, 0, 0, 0, 0, 0], 
+         [0, 0, 0, -T[1,1]*a[1] - T[1,2]*a[2], T[1,1]*a[0], T[1,2]*a[0]], 
+         [0, 0, 0, -T[2,1]*a[1] - T[2,2]*a[2], T[2,1]*a[0], T[2,2]*a[0]]])
+
     return dx2dp2
 
 
@@ -75,21 +78,25 @@ def gradient_hessian(init_p, a, b):
     f = fun(init_p, a, b)
     x = trans_error(init_p, a, b)
     dxdp = calcdxdp(init_p, a)
-    dx2dp2 = calcdx2dp2(a)
+    dx2dp2 = calcdx2dp2(init_p, a)
     g = f *(-d2 * x.T.dot(cov_inv.dot(dxdp)))
     s = init_p.shape[0]
     h = np.zeros([s, s])
     x_cinv_dxdp = x.dot(cov_inv.dot(dxdp))
-    for i in range(s):
-        for j in range(s):
-            x_cinv_dx2dpij = x.dot(cov_inv.dot(dx2dp2[i*3: i*3 + 3, j]))
-            h[i,j] = f * (-d2 )*  (-d2*x_cinv_dxdp[i]*x_cinv_dxdp[j]  +x_cinv_dx2dpij +  dxdp[:,j].dot(cov_inv.dot(dxdp[:,i])))
+    x_cinv_dxdp_x_cinv_dxdpT = x_cinv_dxdp.reshape(s,1).dot(x_cinv_dxdp.reshape(1,s))
+    x_cinv_dx2dp = np.zeros([s, s])
+    x_cinv_dx2dp[3,3:6] = x.dot(cov_inv.dot(dx2dp2[9: 12, 3:6]))
+    x_cinv_dx2dp[4,3:6] = x.dot(cov_inv.dot(dx2dp2[12: 15, 3:6]))
+    x_cinv_dx2dp[5,3:6] = x.dot(cov_inv.dot(dx2dp2[15: 18, 3:6]))
+    dxdpT_cinv_dxdp =  dxdp.T.dot(cov_inv.dot(dxdp))
+    h = f * (-d2 )*  (-d2*x_cinv_dxdp_x_cinv_dxdpT  +x_cinv_dx2dp +  dxdpT_cinv_dxdp.T)
     return g, h
 
 """
 Generating test data
 """
 elements = 100
+np.random.seed(seed=0)
 A =  (np.random.rand(elements,3)-0.5)*2
 
 B = transform3d(np.array([0.2,0.1,-0.2, 0.3,0.3,0.3]), A.T).T
